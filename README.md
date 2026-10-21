@@ -1,4 +1,4 @@
-# Web de Gestión Financiera e Inventario para MacairaStore
+# Web de Gestión Financiera e Inventario para Macaira Studio
 
 Sistema backend desarrollado con Python y Django para la administración centralizada de inventarios, órdenes de trabajo y control financiero de una empresa de publicidad.
 
