@@ -19,7 +19,7 @@ Sistema backend desarrollado con Python y Django para la administración central
 
 1. Clonar el repositorio:
    git clone https://github.com/4a-r0n/MacairaStore.git
-   cd publicidad_backend
+   cd MacairaStore
 
 2. Crear y activar el entorno virtual:
    
