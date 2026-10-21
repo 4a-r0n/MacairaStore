@@ -1,4 +1,4 @@
-# Sistema Backend de Gestión Financiera e Inventario
+# Web de Gestión Financiera e Inventario para MacairaStore
 
 Sistema backend desarrollado con Python y Django para la administración centralizada de inventarios, órdenes de trabajo y control financiero de una empresa de publicidad.
 
