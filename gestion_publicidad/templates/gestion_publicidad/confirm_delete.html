@@ -4,6 +4,16 @@
 <section class="panel confirm-panel">
   <p>¿Confirmas que deseas eliminar <strong>{{ object_label }}</strong>?</p>
   {% if warning %}<p class="page-description">{{ warning }}</p>{% endif %}
-  <form method="post" class="form-actions">{% csrf_token %}<a class="button button-secondary" href="{{ cancel_url }}">Cancelar</a><button class="button button-danger" type="submit">Eliminar</button></form>
+  <form method="post">
+    {% csrf_token %}
+    {% if show_restore_stock %}
+      <label class="restore-stock-option"><input type="checkbox" name="restore_stock"> Sumar nuevamente al stock disponible los insumos utilizados</label>
+      <p class="page-description restore-stock-note">Si los insumos ya se utilizaron y se cancela por otro motivo, deja esta opción sin marcar para mantener el inventario actualizado.</p>
+    {% endif %}
+    <div class="form-actions">
+      <a class="button button-secondary" href="{{ cancel_url }}">Cancelar</a>
+      <button class="button button-danger" type="submit">Eliminar</button>
+    </div>
+  </form>
 </section>
 {% endblock %}

@@ -919,7 +919,8 @@ class CalendarioTrabajoTests(TestCase):
         self.assertEqual(respuesta.status_code, 200)
         self.assertNotContains(respuesta, "Terminada el")
         self.assertNotContains(respuesta, "completada_en")
-        self.assertNotContains(respuesta, "tareas-0-DELETE")
+        self.assertContains(respuesta, "tareas-0-DELETE")
+        self.assertContains(respuesta, "Eliminar jornada")
         self.assertNotContains(respuesta, "materiales-0-DELETE")
 
     def test_pantalla_propia_guarda_jornada_tarea_y_material(self):

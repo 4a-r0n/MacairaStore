@@ -251,6 +251,16 @@ textarea.form-control { min-height: 88px; resize: vertical; }
 .form-error-box { margin-bottom: 14px; border-radius: 6px; background: #fff0ef; padding: 10px 12px; color: #a53d3d; font-size: 11px; }
 .required-mark { color: #bc5b54; }
 .form-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 21px; }
+.form-actions.form-actions-split { justify-content: space-between; align-items: center; }
+.form-actions-left, .form-actions-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.form-actions-left:empty { display: none; }
+.task-form-grid { align-items: end; }
+.task-status-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; align-content: center; }
+.task-status-actions .form-checkbox { margin: 0; }
+.task-status-actions .form-checkbox label { margin: 0; }
+.task-delete-button { min-height: 32px; padding: 0 10px; }
+.task-form-card.is-deleted { opacity: .55; }
+.task-form-card.is-deleted .form-grid > :not(.task-status-actions) { pointer-events: none; }
 .formset-section { margin-top: 24px; border-top: 1px solid var(--line); padding-top: 18px; }
 .formset-list { display: grid; gap: 10px; }
 .formset-card { border: 1px solid #e8ebef; border-radius: 7px; background: #fbfcfa; padding: 14px; }
@@ -261,6 +271,9 @@ textarea.form-control { min-height: 88px; resize: vertical; }
 .button-danger-outline { border: 1px solid #d9a09d; background: #fff; color: #a53d3d; }
 .confirm-panel { max-width: 640px; margin: 0 auto; padding: 24px; }
 .confirm-panel > p:first-child { color: #3c4651; font-size: 14px; }
+.restore-stock-option { display: flex; align-items: flex-start; gap: 9px; margin: 14px 0 6px; color: #3c4651; font-size: 12px; font-weight: 600; cursor: pointer; }
+.restore-stock-option input { width: 16px; height: 16px; margin-top: 1px; accent-color: var(--brand); flex: 0 0 auto; }
+.restore-stock-note { margin: 0 0 4px 25px; }
 .filter-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin-bottom: 15px; }
 .filter-toolbar .search-box { flex: 1 1 340px; width: auto; }
 .filter-submit { display: grid; width: 25px; height: 25px; flex: 0 0 25px; place-items: center; border: 0; border-radius: 4px; background: transparent; color: var(--brand-dark); cursor: pointer; font-size: 15px; }

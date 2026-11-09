@@ -235,6 +235,8 @@ class TareaTrabajoDiaForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if self.data and self.data.get(self.add_prefix("DELETE")) == "on":
+            self.fields["descripcion"].required = False
         _style_fields(self)
 
 
@@ -297,7 +299,7 @@ class TrabajoInsumoForm(forms.ModelForm):
 
 
 TareaFormSet = inlineformset_factory(
-    TrabajoDia, TareaTrabajoDia, form=TareaTrabajoDiaForm, extra=1, can_delete=False
+    TrabajoDia, TareaTrabajoDia, form=TareaTrabajoDiaForm, extra=1, can_delete=True
 )
 MaterialFormSet = inlineformset_factory(
     TrabajoDia, TrabajoInsumo, form=TrabajoInsumoForm, extra=1, can_delete=False

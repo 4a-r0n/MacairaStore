@@ -33,12 +33,50 @@
       {% if task_formset.non_form_errors %}<div class="form-error-box">{{ task_formset.non_form_errors }}</div>{% endif %}
       <div class="formset-list" data-formset-list="tareas">
         {% for form in task_formset %}
-          <article class="formset-card">{% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}{% if form.non_field_errors %}<div class="form-error-box">{{ form.non_field_errors }}</div>{% endif %}<div class="form-grid">{% include "gestion_publicidad/partials/form_fields.html" with form=form %}</div></article>
+          <article class="formset-card task-form-card{% if form.DELETE.value %} is-deleted{% endif %}" data-task-form>
+            {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+            {% if form.non_field_errors %}<div class="form-error-box">{{ form.non_field_errors }}</div>{% endif %}
+            <div class="form-grid task-form-grid">
+              <div class="form-field" data-field="{{ form.descripcion.name }}">
+                <label for="{{ form.descripcion.id_for_label }}">{{ form.descripcion.label }}{% if form.descripcion.field.required %}<span class="required-mark"> *</span>{% endif %}</label>
+                {{ form.descripcion }}
+                {% if form.descripcion.help_text %}<small class="form-help">{{ form.descripcion.help_text }}</small>{% endif %}
+                {% for error in form.descripcion.errors %}<small class="form-error">{{ error }}</small>{% endfor %}
+              </div>
+              <div class="form-field task-status-actions" data-field="{{ form.completada.name }}">
+                <label class="form-checkbox">{{ form.completada }}<span>{{ form.completada.label }}</span></label>
+                {% for error in form.completada.errors %}<small class="form-error">{{ error }}</small>{% endfor %}
+                {% if form.DELETE %}
+                  <span class="task-delete-wrap">
+                    <span class="visually-hidden">{{ form.DELETE }}</span>
+                    <button class="button button-danger-outline task-delete-button" type="button" data-task-delete aria-pressed="{% if form.DELETE.value %}true{% else %}false{% endif %}">Eliminar</button>
+                  </span>
+                {% endif %}
+              </div>
+            </div>
+          </article>
         {% endfor %}
       </div>
       <template data-formset-template="tareas">
         {% with form=task_formset.empty_form %}
-          <article class="formset-card">{% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}<div class="form-grid">{% include "gestion_publicidad/partials/form_fields.html" with form=form %}</div></article>
+          <article class="formset-card task-form-card" data-task-form>
+            {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+            <div class="form-grid task-form-grid">
+              <div class="form-field" data-field="{{ form.descripcion.name }}">
+                <label for="{{ form.descripcion.id_for_label }}">{{ form.descripcion.label }}{% if form.descripcion.field.required %}<span class="required-mark"> *</span>{% endif %}</label>
+                {{ form.descripcion }}
+              </div>
+              <div class="form-field task-status-actions" data-field="{{ form.completada.name }}">
+                <label class="form-checkbox">{{ form.completada }}<span>{{ form.completada.label }}</span></label>
+                {% if form.DELETE %}
+                  <span class="task-delete-wrap">
+                    <span class="visually-hidden">{{ form.DELETE }}</span>
+                    <button class="button button-danger-outline task-delete-button" type="button" data-task-delete aria-pressed="false">Eliminar</button>
+                  </span>
+                {% endif %}
+              </div>
+            </div>
+          </article>
         {% endwith %}
       </template>
       <button class="button button-secondary formset-add" type="button" data-add-formset="tareas">＋ Agregar tarea</button>
@@ -58,6 +96,14 @@
     </section>
   {% endif %}
 
-  <div class="form-actions"><a class="button button-secondary" href="{{ cancel_url }}">Cancelar</a><button class="button button-primary" type="submit">{{ submit_label|default:"Guardar" }}</button></div>
+  <div class="form-actions{% if journey_delete_url %} form-actions-split{% endif %}">
+    <div class="form-actions-left">
+      {% if journey_delete_url %}<a class="button button-danger-outline" href="{{ journey_delete_url }}">Eliminar jornada</a>{% endif %}
+    </div>
+    <div class="form-actions-right">
+      <a class="button button-secondary" href="{{ cancel_url }}">Cancelar</a>
+      <button class="button button-primary" type="submit">{{ submit_label|default:"Guardar" }}</button>
+    </div>
+  </div>
 </form>
 {% endblock %}

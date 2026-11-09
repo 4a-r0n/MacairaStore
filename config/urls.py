@@ -30,6 +30,7 @@ urlpatterns = [
     path('jornadas/', gestion_publicidad_views.journey_list, name='journey_list'),
     path('jornadas/nueva/', gestion_publicidad_views.journey_create, name='journey_create'),
     path('jornadas/<int:jornada_id>/editar/', gestion_publicidad_views.journey_edit, name='journey_edit'),
+    path('jornadas/<int:jornada_id>/eliminar/', gestion_publicidad_views.journey_delete, name='journey_delete'),
     path('por-cobrar/', gestion_publicidad_views.receivables_list, name='receivables_list'),
     path('inventario/', gestion_publicidad_views.inventory_list, name='inventory_list'),
     path('inventario/nuevo/', gestion_publicidad_views.inventory_create, name='inventory_create'),

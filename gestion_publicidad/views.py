@@ -773,10 +773,65 @@ def journey_edit(request, jornada_id):
         task_formset,
         material_formset,
         f"Editar jornada · {journey.fecha:%d/%m/%Y}",
+        journey=journey,
     )
 
 
-def _journey_form_response(request, form, task_formset, material_formset, title):
+@login_required(login_url="/login/")
+def journey_delete(request, jornada_id):
+    if not _can_access(request.user, "gestion_publicidad.delete_trabajo"):
+        return _forbidden()
+    journey = get_object_or_404(TrabajoDia, pk=jornada_id)
+    has_materials = journey.materiales_utilizados.exists()
+    if request.method == "POST":
+        restore_stock = request.POST.get("restore_stock") == "on"
+        try:
+            with transaction.atomic():
+                if has_materials:
+                    if restore_stock:
+                        for material in journey.materiales_utilizados.select_related(
+                            "insumo", "tipo_insumo"
+                        ):
+                            material.delete()
+                    else:
+                        journey.materiales_utilizados.update(jornada=None)
+                journey.delete()
+        except ProtectedError:
+            messages.error(
+                request,
+                "No se puede eliminar esta jornada porque tiene registros asociados.",
+            )
+            return redirect("journey_edit", jornada_id=journey.pk)
+        except ValueError as error:
+            messages.error(request, str(error))
+            return redirect("journey_edit", jornada_id=journey.pk)
+        messages.success(request, "La jornada se eliminó correctamente.")
+        return redirect("journey_list")
+    warning = "La eliminación no se puede deshacer. Las tareas de esta jornada también se eliminarán."
+    if has_materials:
+        warning = (
+            "La eliminación no se puede deshacer. Las tareas de esta jornada también se eliminarán. "
+            "Elige cómo tratar los insumos utilizados."
+        )
+    return render(
+        request,
+        "gestion_publicidad/confirm_delete.html",
+        _app_context(
+            request,
+            "jornadas",
+            page_title=f"Eliminar jornada · {journey.fecha:%d/%m/%Y}",
+            object_label=f"Jornada de {journey.trabajo} ({journey.fecha:%d/%m/%Y})",
+            cancel_url=reverse("journey_edit", args=(journey.pk,)),
+            warning=warning,
+            show_restore_stock=has_materials,
+        ),
+    )
+
+
+def _journey_form_response(request, form, task_formset, material_formset, title, journey=None):
+    journey_delete_url = ""
+    if journey and journey.pk and _can_access(request.user, "gestion_publicidad.delete_trabajo"):
+        journey_delete_url = reverse("journey_delete", args=(journey.pk,))
     return render(
         request,
         "gestion_publicidad/form_page.html",
@@ -790,6 +845,7 @@ def _journey_form_response(request, form, task_formset, material_formset, title)
             material_formset=material_formset,
             cancel_url=reverse("journey_list"),
             submit_label="Guardar jornada",
+            journey_delete_url=journey_delete_url,
         ),
     )
 

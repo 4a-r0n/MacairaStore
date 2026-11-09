@@ -111,6 +111,28 @@
     updatePersonalPermissions();
   }
 
+  function syncTaskDelete(card) {
+    if (!card) return;
+    const checkbox = card.querySelector('input[type="checkbox"][name$="-DELETE"]');
+    const button = card.querySelector("[data-task-delete]");
+    if (!checkbox || !button) return;
+    const deleted = checkbox.checked;
+    card.classList.toggle("is-deleted", deleted);
+    button.setAttribute("aria-pressed", deleted ? "true" : "false");
+    button.textContent = deleted ? "Deshacer" : "Eliminar";
+  }
+
+  document.querySelectorAll("[data-task-form]").forEach(syncTaskDelete);
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-task-delete]");
+    if (!button) return;
+    const card = button.closest("[data-task-form]");
+    const checkbox = card?.querySelector('input[type="checkbox"][name$="-DELETE"]');
+    if (!card || !checkbox) return;
+    checkbox.checked = !checkbox.checked;
+    syncTaskDelete(card);
+  });
+
   document.querySelectorAll("[data-add-formset]").forEach((button) => {
     button.addEventListener("click", () => {
       const prefix = button.dataset.addFormset;
