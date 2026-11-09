@@ -1,0 +1,48 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Iniciar sesión | Macaira Studio</title>
+  <link rel="stylesheet" href="{% static 'gestion_publicidad/css/dashboard.css' %}">
+</head>
+<body class="login-page">
+  <main class="login-layout">
+    <a class="brand login-brand" href="{% url 'dashboard' %}">
+      <span class="brand-mark" aria-hidden="true">M</span>
+      <span>Macaira <small>STUDIO</small></span>
+    </a>
+    <section class="login-card" aria-labelledby="login-heading">
+      <div class="login-heading">
+        <p class="eyebrow">MACAIRA STUDIO</p>
+        <h1 id="login-heading">Bienvenido</h1>
+        <p>Inicia sesión para continuar</p>
+      </div>
+      {% if form.non_field_errors %}
+        <div class="login-error" role="alert">{{ form.non_field_errors|join:" " }}</div>
+      {% endif %}
+      <form method="post" action="{% url 'login' %}" class="login-form">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
+        <div class="field-group">
+          <label for="{{ form.username.id_for_label }}">Usuario o correo electrónico</label>
+          {{ form.username }}
+          {% for error in form.username.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="field-group">
+          <label for="{{ form.password.id_for_label }}">Contraseña</label>
+          {{ form.password }}
+          {% for error in form.password.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+        </div>
+        <label class="remember-option">
+          <input type="checkbox" name="remember_me" value="on">
+          <span>Recordarme siempre</span>
+        </label>
+        <button class="login-submit" type="submit">Iniciar sesión</button>
+      </form>
+    </section>
+    <p class="login-footer">Acceso seguro · Macaira Studio</p>
+  </main>
+</body>
+</html>

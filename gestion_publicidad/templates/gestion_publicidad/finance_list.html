@@ -1,0 +1,11 @@
+{% extends "gestion_publicidad/base_app.html" %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">CONTROL FINANCIERO</p><h1>Finanzas y movimientos</h1><p class="page-description">{{ page_description }}</p></div><div class="heading-actions">{% if can_manage_categories %}<a class="button button-secondary" href="{% url 'category_list' %}">Categorías</a>{% endif %}{% if can_add_movement %}<a class="button button-primary" href="{% url 'movement_create' %}">＋ Registrar movimiento</a>{% endif %}</div></div>
+<article class="panel">
+  <form method="get" class="filter-toolbar">
+    <label class="search-box"><span aria-hidden="true">⌕</span><input type="search" name="q" value="{{ query }}" placeholder="Buscar descripción, trabajo o empleado"><button type="submit" class="filter-submit" aria-label="Aplicar filtros"><span aria-hidden="true">↵</span></button></label>
+    <label class="filter-select"><span class="visually-hidden">Tipo de movimiento</span><select class="form-control" name="tipo"><option value="">Ingresos y egresos</option>{% for value,label in type_choices %}<option value="{{ value }}" {% if selected_kind == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+  </form>
+  {% include "gestion_publicidad/partials/movement_table.html" %}
+</article>
+{% endblock %}

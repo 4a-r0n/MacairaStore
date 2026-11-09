@@ -1,0 +1,21 @@
+<div class="table-wrap">
+  <table id="{% if compact %}work-table-recent{% else %}work-table-all{% endif %}">
+    <thead><tr><th>Trabajo</th><th>Cliente</th><th>Estado</th><th>Entrega</th><th>Saldo pendiente</th><th>Creado</th><th></th></tr></thead>
+    <tbody>
+      {% for trabajo in trabajos %}
+        <tr data-search-row="work" data-search-text="{{ trabajo.pk }} {{ trabajo.cliente }} {{ trabajo.descripcion }} {{ trabajo.get_estado_display }}">
+          <td><strong>#{{ trabajo.pk }}</strong></td>
+          <td><span class="primary-cell">{{ trabajo.cliente }}</span><small class="cell-subtitle">{{ trabajo.descripcion|truncatechars:72 }}</small></td>
+          <td><span class="status status-{{ trabajo.estado|slugify }}">{{ trabajo.get_estado_display }}</span></td>
+          <td>{{ trabajo.fecha_limite|date:"d/m/Y"|default:"Sin fecha" }}</td>
+          <td class="amount">{{ trabajo.saldo_pendiente }}</td>
+          <td>{{ trabajo.fecha_creacion|date:"d/m/Y" }}</td>
+          <td><a class="row-action" href="{% url 'work_detail' trabajo.pk %}">Abrir</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="7" class="table-empty">Todavía no hay trabajos registrados.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if not compact %}<p class="search-empty" data-no-search-results="work" hidden>No hay trabajos que coincidan con la búsqueda.</p>{% endif %}
+</div>

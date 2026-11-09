@@ -1,0 +1,11 @@
+{% extends "gestion_publicidad/base_app.html" %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">DETALLE DEL TRABAJO</p><h1>Trabajo #{{ trabajo.pk }} · {{ trabajo.cliente }}</h1><p class="page-description">{{ trabajo.get_estado_display }} · Creado {{ trabajo.fecha_creacion|date:"d/m/Y" }}</p></div><div class="heading-actions">{% if can_change_work %}<a class="button button-secondary" href="{% url 'work_edit' trabajo.pk %}">Editar trabajo</a><a class="button button-primary" href="{% url 'journey_create' %}?trabajo={{ trabajo.pk }}">＋ Agendar jornada</a>{% endif %}</div></div>
+<div class="detail-grid">
+  <article class="panel"><p class="eyebrow">INFORMACIÓN</p><h2>Descripción</h2><p class="detail-description">{{ trabajo.descripcion|linebreaksbr }}</p><dl class="detail-list"><div><dt>Monto total</dt><dd>{{ trabajo.monto_total|floatformat:2 }} {{ trabajo.get_tipo_cuenta_display|default:"" }}</dd></div><div><dt>Saldo pendiente</dt><dd>{{ trabajo.saldo_pendiente|floatformat:2 }}</dd></div><div><dt>Fecha de entrega</dt><dd>{{ trabajo.fecha_limite|date:"d/m/Y"|default:"Sin fecha" }}</dd></div><div><dt>Estado de entrega</dt><dd>{{ trabajo.estado_entrega }}</dd></div></dl></article>
+  <article class="panel"><div class="panel-heading"><div><p class="eyebrow">PLANIFICACIÓN</p><h2>Jornadas</h2></div></div>
+    {% for jornada in trabajo.jornadas.all %}<div class="detail-row"><div><strong>{{ jornada.fecha|date:"d/m/Y" }}</strong><small class="cell-subtitle">{{ jornada.tareas.count }} tareas · {{ jornada.materiales_utilizados.count }} insumos</small></div>{% if can_change_work %}<a class="row-action" href="{% url 'journey_edit' jornada.pk %}">Ver / editar</a>{% endif %}</div>{% empty %}<p class="empty-state">Todavía no hay jornadas asociadas.</p>{% endfor %}
+  </article>
+</div>
+<div class="form-actions detail-actions"><a class="button button-secondary" href="{% url 'work_list' %}">Volver a trabajos</a>{% if can_delete_work %}<a class="button button-danger-outline" href="{% url 'work_delete' trabajo.pk %}">Eliminar</a>{% endif %}</div>
+{% endblock %}

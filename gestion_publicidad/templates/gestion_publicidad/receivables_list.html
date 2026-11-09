@@ -1,0 +1,8 @@
+{% extends "gestion_publicidad/base_app.html" %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">SEGUIMIENTO DE PAGOS</p><h1>Trabajos por cobrar</h1><p class="page-description">{{ page_description }}</p></div></div>
+<article class="panel">
+  <form method="get" class="filter-toolbar"><label class="search-box"><span aria-hidden="true">⌕</span><input type="search" name="q" value="{{ query }}" placeholder="Buscar por cliente o descripción"><button type="submit" class="filter-submit" aria-label="Aplicar búsqueda"><span aria-hidden="true">↵</span></button></label></form>
+  {% include "gestion_publicidad/partials/receivables_table.html" %}
+</article>
+{% endblock %}

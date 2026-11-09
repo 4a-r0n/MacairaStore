@@ -1,0 +1,32 @@
+{% extends "gestion_publicidad/base_app.html" %}
+{% block content %}
+<div class="page-heading">
+  <div><p class="eyebrow">CUENTAS Y ACCESOS</p><h1>{{ usuario.get_full_name|default:usuario.username }}</h1><p class="page-description">Detalle del rol y los accesos asignados.</p></div>
+  <div class="heading-actions"><a class="button button-secondary" href="{% url 'personal_edit' usuario.pk %}">Editar cuenta</a><a class="button button-danger-outline" href="{% url 'personal_delete' usuario.pk %}">Eliminar</a></div>
+</div>
+<div class="detail-grid">
+  <article class="panel">
+    <p class="eyebrow">INFORMACIÓN</p>
+    <h2>Cuenta</h2>
+    <dl class="detail-list">
+      <div><dt>Usuario</dt><dd>{{ usuario.username }}</dd></div>
+      <div><dt>Correo</dt><dd>{{ usuario.email|default:"Sin correo" }}</dd></div>
+      <div><dt>Nombre</dt><dd>{{ usuario.get_full_name|default:"Sin nombre" }}</dd></div>
+      <div><dt>Rol</dt><dd>{{ role_label }}</dd></div>
+      <div><dt>Estado</dt><dd>{% if usuario.is_active %}Activa{% else %}Inactiva{% endif %}</dd></div>
+    </dl>
+  </article>
+  <article class="panel">
+    <p class="eyebrow">AUTORIZACIÓN</p>
+    <h2>Permisos individuales</h2>
+    {% if role_label == "Administrador" %}
+      <p class="muted">El rol Administrador tiene acceso total a los módulos de la aplicación.</p>
+    {% else %}
+      <ul class="permission-list">
+        {% for permiso in permisos %}<li>{{ permiso.name }}</li>{% empty %}<li>Sin permisos individuales asignados.</li>{% endfor %}
+      </ul>
+    {% endif %}
+  </article>
+</div>
+<div class="form-actions"><a class="button button-secondary" href="{% url 'personal_list' %}">Volver a Personal</a></div>
+{% endblock %}

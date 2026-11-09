@@ -1,0 +1,15 @@
+{% extends "gestion_publicidad/base_app.html" %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">PRODUCCIÓN</p><h1>Trabajos</h1><p class="page-description">{{ page_description }}</p></div><div class="heading-actions">{% if can_add_work %}<a class="button button-primary" href="{% url 'work_create' %}">＋ Nuevo trabajo</a>{% endif %}</div></div>
+<article class="panel">
+  <form method="get" class="filter-toolbar">
+    <label class="search-box"><span aria-hidden="true">⌕</span><input name="q" type="search" value="{{ query }}" placeholder="Buscar por cliente, descripción o número"><button type="submit" class="filter-submit" aria-label="Aplicar búsqueda"><span aria-hidden="true">↵</span></button></label>
+    <label class="filter-select"><span class="visually-hidden">Estado</span><select name="estado" class="form-control"><option value="">Todos los estados</option>{% for value,label in state_choices %}<option value="{{ value }}" {% if selected_state == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+  </form>
+  <div class="table-wrap"><table><thead><tr><th>Trabajo</th><th>Cliente</th><th>Estado</th><th>Entrega</th><th>Saldo</th><th>Creado</th><th></th></tr></thead><tbody>
+    {% for trabajo in trabajos %}
+      <tr><td><strong>#{{ trabajo.pk }}</strong></td><td><span class="primary-cell">{{ trabajo.cliente }}</span><small class="cell-subtitle">{{ trabajo.descripcion|truncatechars:72 }}</small></td><td><span class="status status-{{ trabajo.estado|slugify }}">{{ trabajo.get_estado_display }}</span></td><td>{{ trabajo.fecha_limite|date:"d/m/Y"|default:"Sin fecha" }}</td><td class="amount">{{ trabajo.saldo_pendiente|floatformat:2 }}</td><td>{{ trabajo.fecha_creacion|date:"d/m/Y" }}</td><td><a class="row-action" href="{% url 'work_detail' trabajo.pk %}">Abrir</a></td></tr>
+    {% empty %}<tr><td colspan="7" class="table-empty">No se encontraron trabajos.</td></tr>{% endfor %}
+  </tbody></table></div>
+</article>
+{% endblock %}

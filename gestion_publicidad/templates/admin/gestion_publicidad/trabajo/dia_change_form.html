@@ -1,0 +1,17 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% block content %}
+  <p>
+    {% if request.GET.dashboard_section == "jornadas" %}
+      <a class="button" href="{% url 'dashboard' %}?calendar_month={{ request.GET.calendar_month }}#jornadas">
+        &larr; {% translate "Volver al calendario" %}
+      </a>
+    {% else %}
+      <a class="button" href="{% url 'admin:gestion_publicidad_trabajo_changelist' %}">
+        &larr; {% translate "Volver a Trabajos" %}
+      </a>
+    {% endif %}
+  </p>
+  {{ block.super }}
+{% endblock %}

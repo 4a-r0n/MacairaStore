@@ -1,0 +1,20 @@
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Trabajo</th><th>Cliente</th><th>Monto total</th><th>Saldo pendiente</th><th>Fecha límite</th><th>Entrega</th><th></th></tr></thead>
+    <tbody>
+      {% for trabajo in trabajos_por_cobrar %}
+        <tr>
+          <td><strong>#{{ trabajo.pk }}</strong></td>
+          <td><span class="primary-cell">{{ trabajo.cliente }}</span><small class="cell-subtitle">{{ trabajo.descripcion|truncatechars:72 }}</small></td>
+          <td class="amount">{{ trabajo.monto_total }}</td>
+          <td class="amount amount-due">{{ trabajo.saldo_pendiente }}</td>
+          <td>{{ trabajo.fecha_limite|date:"d/m/Y"|default:"Sin fecha" }}</td>
+          <td><span class="status status-{{ trabajo.estado_entrega|slugify }}">{{ trabajo.estado_entrega }}</span></td>
+          <td><a class="row-action" href="{% url 'work_detail' trabajo.pk %}">Abrir</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="7" class="table-empty">No hay trabajos finalizados con saldo pendiente.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

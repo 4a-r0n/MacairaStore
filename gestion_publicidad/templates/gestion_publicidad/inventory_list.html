@@ -1,0 +1,21 @@
+{% extends "gestion_publicidad/base_app.html" %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">CONTROL DE EXISTENCIAS</p><h1>Insumos e inventario</h1><p class="page-description">{{ page_description }}</p></div><div class="heading-actions">{% if can_change_inventory %}<a class="button button-secondary" href="{% url 'inventory_restock' %}">Reabastecer stock</a>{% endif %}{% if can_add_inventory %}<a class="button button-primary" href="{% url 'inventory_create' %}">＋ Nuevo insumo</a>{% endif %}</div></div>
+<article class="panel">
+  <div class="panel-heading"><div><p class="eyebrow">INVENTARIO</p><h2>Insumos <span class="count-pill">{{ insumos|length }}</span></h2></div></div>
+  <form method="get" class="filter-toolbar"><label class="search-box"><span aria-hidden="true">⌕</span><input type="search" name="q" value="{{ query }}" placeholder="Buscar por insumo, área o variante"><button type="submit" class="filter-submit" aria-label="Aplicar búsqueda"><span aria-hidden="true">↵</span></button></label></form>
+  <div class="table-wrap"><table><thead><tr><th>Insumo</th><th>Área</th><th>Existencia</th><th>Stock mínimo</th><th>Estado</th><th>Variantes</th><th></th></tr></thead><tbody>
+  {% for insumo in insumos %}
+    {% with tipos=insumo.tipos.all %}
+      {% if insumo.tiene_tipos or tipos %}
+        <tr><td><strong>{{ insumo.nombre }}</strong></td><td>{{ insumo.area.nombre|default:"Sin área" }}</td><td>Gestionada por variantes</td><td>—</td><td>—</td><td>{{ tipos|length }}</td><td><span class="inventory-row-actions">{% if can_change_inventory %}<a class="row-action" href="{% url 'inventory_edit' insumo.pk %}">Editar</a>{% endif %}{% if can_delete_inventory %}<a class="row-action" href="{% url 'inventory_delete' insumo.pk %}">Eliminar</a>{% endif %}</span></td></tr>
+        {% for tipo in tipos %}<tr class="variant-row"><td>↳ {{ tipo.nombre }}</td><td>{{ insumo.area.nombre|default:"Sin área" }}</td><td>{{ tipo.cantidad_disponible }} {{ tipo.unidad_medida }}</td><td>{{ tipo.stock_minimo }} {{ tipo.unidad_medida }}</td><td><span class="status status-{{ tipo.estado_stock|slugify }}">{{ tipo.estado_stock }}</span></td><td>Variante</td><td>{% if can_change_inventory %}<a class="row-action" href="{% url 'inventory_edit' insumo.pk %}">Editar</a>{% endif %}</td></tr>{% endfor %}
+      {% else %}
+        <tr><td><strong>{{ insumo.nombre }}</strong></td><td>{{ insumo.area.nombre|default:"Sin área" }}</td><td>{{ insumo.cantidad_disponible }} {{ insumo.unidad_medida }}</td><td>{{ insumo.stock_minimo }} {{ insumo.unidad_medida }}</td><td><span class="status status-{{ insumo.estado_stock|slugify }}">{{ insumo.estado_stock }}</span></td><td>—</td><td><span class="inventory-row-actions">{% if can_change_inventory %}<a class="row-action" href="{% url 'inventory_edit' insumo.pk %}">Editar</a>{% endif %}{% if can_delete_inventory %}<a class="row-action" href="{% url 'inventory_delete' insumo.pk %}">Eliminar</a>{% endif %}</span></td></tr>
+      {% endif %}
+    {% endwith %}
+  {% empty %}<tr><td colspan="7" class="table-empty">No hay insumos que coincidan con la búsqueda.</td></tr>{% endfor %}
+  </tbody></table></div>
+</article>
+<div class="section-shortcuts">{% if can_add_inventory %}<a href="{% url 'area_create' %}">Crear área de insumos <span>＋</span></a>{% endif %}{% for area in areas %}{% if can_change_inventory %}<a href="{% url 'area_edit' area.pk %}">Editar área: {{ area.nombre }}</a>{% endif %}{% endfor %}</div>
+{% endblock %}

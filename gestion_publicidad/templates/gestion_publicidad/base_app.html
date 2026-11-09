@@ -1,0 +1,62 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page_title }} | Macaira Studio</title>
+  <link rel="stylesheet" href="{% static 'gestion_publicidad/css/dashboard.css' %}?v=20261106-3">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Navegación principal">
+      <a class="brand" href="{% url 'dashboard' %}">
+        <span class="brand-mark" aria-hidden="true">M</span>
+        <span>Macaira <small>STUDIO</small></span>
+      </a>
+      <div class="sidebar-caption">ESPACIO DE TRABAJO</div>
+      <nav class="navigation">
+        <a href="{% url 'dashboard' %}" class="nav-link"><span class="nav-icon">⌂</span> Inicio</a>
+        {% if can_view_work %}
+          <a href="{% url 'work_list' %}" class="nav-link {% if active_module == 'trabajos' %}active{% endif %}"><span class="nav-icon">▤</span> Trabajos</a>
+          <a href="{% url 'journey_list' %}" class="nav-link {% if active_module == 'jornadas' %}active{% endif %}"><span class="nav-icon">☷</span> Jornadas</a>
+          <a href="{% url 'receivables_list' %}" class="nav-link {% if active_module == 'por-cobrar' %}active{% endif %}"><span class="nav-icon">＄</span> Por cobrar</a>
+        {% endif %}
+        {% if can_view_inventory %}
+          <a href="{% url 'inventory_list' %}" class="nav-link {% if active_module == 'inventario' %}active{% endif %}"><span class="nav-icon">▦</span> Insumos</a>
+        {% endif %}
+        {% if can_view_finance %}
+          <a href="{% url 'finance_list' %}" class="nav-link {% if active_module == 'finanzas' %}active{% endif %}"><span class="nav-icon">◷</span> Finanzas</a>
+        {% endif %}
+        {% if can_manage_personal %}
+          <a href="{% url 'personal_list' %}" class="nav-link {% if active_module == 'personal' %}active{% endif %}"><span class="nav-icon">♙</span> Personal</a>
+        {% endif %}
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="user-card"><span class="avatar">{{ request.user.get_username|slice:":1"|upper }}</span><span class="user-name">{{ request.user.get_full_name|default:request.user.get_username }}</span></div>
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button class="nav-link signout" type="submit"><span class="nav-icon">↪</span> Cerrar sesión</button>
+        </form>
+      </div>
+    </aside>
+    <main class="main-content">
+      <header class="topbar">
+        <button class="menu-toggle" type="button" aria-label="Abrir navegación" aria-controls="sidebar" aria-expanded="false">☰</button>
+        <div class="topbar-label"><a href="{% url 'dashboard' %}">Gestión integral</a><span>/</span><strong>{{ page_title }}</strong></div>
+      </header>
+      <div class="page-container">
+        {% if messages %}
+          <div class="messages" role="status" aria-live="polite">
+            {% for message in messages %}<p class="message {{ message.tags }}">{{ message }}</p>{% endfor %}
+          </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+        <footer class="page-footer"><span>Macaira Studio · Gestión</span><a href="{% url 'dashboard' %}">Volver al resumen</a></footer>
+      </div>
+    </main>
+  </div>
+  <script src="{% static 'gestion_publicidad/js/dashboard.js' %}?v=20261106-3" defer></script>
+  <script src="{% static 'gestion_publicidad/js/app_forms.js' %}?v=20261106-3" defer></script>
+</body>
+</html>

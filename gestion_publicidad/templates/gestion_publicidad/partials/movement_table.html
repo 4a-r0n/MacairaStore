@@ -1,0 +1,30 @@
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Movimiento</th><th>Categoría</th><th>Trabajo / empleado</th><th>Fecha</th><th>Método</th><th>Monto</th><th></th></tr></thead>
+    <tbody>
+      {% for movimiento in movimientos %}
+        <tr>
+          <td><span class="movement-type {% if movimiento.tipo == 'INGRESO' %}positive{% else %}negative{% endif %}">{{ movimiento.get_tipo_display }}</span><small class="cell-subtitle">{{ movimiento.descripcion|truncatechars:64 }}</small></td>
+          <td>
+            {% if movimiento.detalle_financiero.categoria %}
+              {{ movimiento.detalle_financiero.categoria.nombre }}
+            {% elif movimiento.tipo == "INGRESO" %}
+              {{ movimiento.get_tipo_ingreso_display|default:"Sin categoría" }}
+            {% else %}
+              {{ movimiento.get_categoria_egreso_display|default:"Sin categoría" }}
+            {% endif %}
+          </td>
+          <td>
+            {% if movimiento.trabajo %}{{ movimiento.trabajo.cliente }}{% elif movimiento.empleado %}{{ movimiento.empleado.get_full_name|default:movimiento.empleado.get_username }}{% else %}<span class="muted">—</span>{% endif %}
+          </td>
+          <td>{% if movimiento.detalle_financiero.fecha_transaccion %}{{ movimiento.detalle_financiero.fecha_transaccion|date:"d/m/Y" }}{% else %}{{ movimiento.fecha|date:"d/m/Y" }}{% endif %}</td>
+          <td>{{ movimiento.get_metodo_pago_display }}</td>
+          <td class="amount {% if movimiento.tipo == 'INGRESO' %}amount-positive{% else %}amount-negative{% endif %}">{{ movimiento.monto|floatformat:2 }} {% if movimiento.moneda_panel %}{{ movimiento.moneda_panel }}{% elif movimiento.tipo_cuenta %}{{ movimiento.get_tipo_cuenta_display }}{% elif movimiento.metodo_pago == "EFECTIVO_USD" %}USD{% elif movimiento.metodo_pago == "PAGO_MOVIL" %}VES{% else %}Moneda no especificada{% endif %}</td>
+          <td>{% if can_change_movement %}<a class="row-action" href="{% url 'movement_edit' movimiento.pk %}">Abrir</a>{% endif %}{% if can_delete_movement %}<a class="row-action" href="{% url 'movement_delete' movimiento.pk %}">Eliminar</a>{% endif %}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="7" class="table-empty">No hay movimientos financieros registrados.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

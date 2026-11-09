@@ -1,0 +1,63 @@
+{% extends "gestion_publicidad/base_app.html" %}
+{% block content %}
+<div class="page-heading">
+  <div><p class="eyebrow">GESTIÓN MACAIRA</p><h1>{{ page_title }}</h1>{% if page_description %}<p class="page-description">{{ page_description }}</p>{% endif %}</div>
+</div>
+<form method="post" class="panel app-form" novalidate>
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="form-error-box" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+  <div class="form-grid" data-insumo-main>{% include "gestion_publicidad/partials/form_fields.html" with form=form %}</div>
+
+  {% if type_formset %}
+    <section class="formset-section">
+      <div class="panel-heading"><div><p class="eyebrow">VARIANTES</p><h2>Tipos de insumo</h2></div></div>
+      {{ type_formset.management_form }}
+      {% if type_formset.non_form_errors %}<div class="form-error-box">{{ type_formset.non_form_errors }}</div>{% endif %}
+      <div class="formset-list">
+        {% for form in type_formset %}
+          <article class="formset-card">
+            {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+            {% if form.non_field_errors %}<div class="form-error-box">{{ form.non_field_errors }}</div>{% endif %}
+            <div class="form-grid">{% include "gestion_publicidad/partials/form_fields.html" with form=form %}</div>
+            {% if form.DELETE %}<label class="form-delete">{{ form.DELETE }} Eliminar variante</label>{% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
+  {% if task_formset %}
+    <section class="formset-section">
+      <div class="panel-heading"><div><p class="eyebrow">PLANIFICACIÓN</p><h2>Tareas de la jornada</h2></div></div>
+      {{ task_formset.management_form }}
+      {% if task_formset.non_form_errors %}<div class="form-error-box">{{ task_formset.non_form_errors }}</div>{% endif %}
+      <div class="formset-list" data-formset-list="tareas">
+        {% for form in task_formset %}
+          <article class="formset-card">{% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}{% if form.non_field_errors %}<div class="form-error-box">{{ form.non_field_errors }}</div>{% endif %}<div class="form-grid">{% include "gestion_publicidad/partials/form_fields.html" with form=form %}</div></article>
+        {% endfor %}
+      </div>
+      <template data-formset-template="tareas">
+        {% with form=task_formset.empty_form %}
+          <article class="formset-card">{% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}<div class="form-grid">{% include "gestion_publicidad/partials/form_fields.html" with form=form %}</div></article>
+        {% endwith %}
+      </template>
+      <button class="button button-secondary formset-add" type="button" data-add-formset="tareas">＋ Agregar tarea</button>
+    </section>
+  {% endif %}
+
+  {% if material_formset %}
+    <section class="formset-section">
+      <div class="panel-heading"><div><p class="eyebrow">INVENTARIO</p><h2>Insumos utilizados</h2></div></div>
+      {{ material_formset.management_form }}
+      {% if material_formset.non_form_errors %}<div class="form-error-box">{{ material_formset.non_form_errors }}</div>{% endif %}
+      <div class="formset-list">
+        {% for form in material_formset %}
+          <article class="formset-card">{% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}{% if form.non_field_errors %}<div class="form-error-box">{{ form.non_field_errors }}</div>{% endif %}<div class="form-grid">{% include "gestion_publicidad/partials/form_fields.html" with form=form %}</div></article>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
+  <div class="form-actions"><a class="button button-secondary" href="{{ cancel_url }}">Cancelar</a><button class="button button-primary" type="submit">{{ submit_label|default:"Guardar" }}</button></div>
+</form>
+{% endblock %}

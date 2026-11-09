@@ -1,0 +1,431 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Macaira Studio | Gestión</title>
+  <link rel="stylesheet" href="{% static 'gestion_publicidad/css/dashboard.css' %}?v=20261106-3">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Navegación principal">
+      <a class="brand" href="#inicio" data-section-link="inicio">
+        <span class="brand-mark" aria-hidden="true">M</span>
+        <span>Macaira <small>STUDIO</small></span>
+      </a>
+      <div class="sidebar-caption">ESPACIO DE TRABAJO</div>
+      <nav class="navigation">
+        <a href="#inicio" data-section-link="inicio" class="nav-link active">
+          <span class="nav-icon" aria-hidden="true">⌂</span> Inicio
+        </a>
+        {% if can_view_work %}
+          <a href="#trabajos" data-section-link="trabajos" class="nav-link">
+            <span class="nav-icon" aria-hidden="true">▤</span> Trabajos
+          </a>
+          <a href="#jornadas" data-section-link="jornadas" class="nav-link">
+            <span class="nav-icon" aria-hidden="true">☷</span> Jornadas y tareas
+          </a>
+          <a href="#por-cobrar" data-section-link="por-cobrar" class="nav-link">
+            <span class="nav-icon" aria-hidden="true">＄</span> Por cobrar
+          </a>
+        {% endif %}
+        {% if can_view_inventory %}
+          <a href="#inventario" data-section-link="inventario" class="nav-link">
+            <span class="nav-icon" aria-hidden="true">▦</span> Insumos
+          </a>
+        {% endif %}
+        {% if can_view_finance %}
+          <a href="#finanzas" data-section-link="finanzas" class="nav-link">
+            <span class="nav-icon" aria-hidden="true">◷</span> Finanzas
+          </a>
+        {% endif %}
+        {% if can_manage_personal %}
+          <a href="{% url 'personal_list' %}" class="nav-link">
+            <span class="nav-icon" aria-hidden="true">♙</span> Personal
+          </a>
+        {% endif %}
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="user-card">
+          <span class="avatar">{{ request.user.get_username|slice:":1"|upper }}</span>
+          <span class="user-name">{{ request.user.get_full_name|default:request.user.get_username }}</span>
+        </div>
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button class="nav-link signout" type="submit">
+            <span class="nav-icon" aria-hidden="true">↪</span> Cerrar sesión
+          </button>
+        </form>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button class="menu-toggle" type="button" aria-label="Abrir navegación" aria-controls="sidebar" aria-expanded="false">☰</button>
+        <div class="topbar-label">Gestión integral <span>/</span> <strong id="current-section-title">Inicio</strong></div>
+      </header>
+
+      <div class="page-container">
+        {% if messages %}
+          <div class="messages" role="status" aria-live="polite">
+            {% for message in messages %}
+              <p class="message {{ message.tags }}">{{ message }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% if not can_view_work and not can_view_inventory and not can_view_finance %}
+          <div class="permission-note">
+            <h1>Bienvenido a Macaira Studio</h1>
+            <p>Tu cuenta no tiene permisos para consultar los módulos de gestión. Solicita acceso a un administrador.</p>
+          </div>
+        {% endif %}
+
+        <section class="page-section active" id="inicio" data-section="inicio" aria-labelledby="heading-inicio">
+          <div class="page-heading">
+            <div>
+              <p class="eyebrow">PANEL DE CONTROL</p>
+              <h1 id="heading-inicio">Resumen del negocio</h1>
+              <p class="page-description">Una vista clara de la operación de Macaira Studio.</p>
+            </div>
+            <span class="today-chip">{% now "d/m/Y" %}</span>
+          </div>
+
+          <div class="stats-grid">
+            {% if can_view_work %}
+              <article class="stat-card">
+                <div class="stat-top"><span class="stat-icon blue">▤</span><span class="stat-label">TRABAJOS</span></div>
+                <strong class="stat-value">{{ trabajos_count }}</strong>
+                <span class="stat-note">{{ trabajos_pendientes_count }} pendientes</span>
+                <a class="card-link" href="#trabajos" data-section-link="trabajos">Ver trabajos <span>→</span></a>
+              </article>
+            {% endif %}
+            {% if can_view_inventory %}
+              <article class="stat-card">
+                <div class="stat-top"><span class="stat-icon amber">▦</span><span class="stat-label">INSUMOS</span></div>
+                <strong class="stat-value">{{ insumos_count }}</strong>
+                <span class="stat-note">{{ insumos_criticos_count }} existencias agotadas o críticas</span>
+                <a class="card-link" href="#inventario" data-section-link="inventario">Revisar inventario <span>→</span></a>
+              </article>
+            {% endif %}
+            {% if can_view_finance %}
+              <article class="stat-card">
+                <div class="stat-top"><span class="stat-icon green">◷</span><span class="stat-label">MOVIMIENTOS</span></div>
+                <strong class="stat-value">{{ movimientos_count }}</strong>
+                <span class="stat-note">{{ ingresos_count }} ingresos · {{ egresos_count }} egresos</span>
+                <a class="card-link" href="#finanzas" data-section-link="finanzas">Ver finanzas <span>→</span></a>
+              </article>
+            {% endif %}
+            {% if can_view_work %}
+              <article class="stat-card">
+                <div class="stat-top"><span class="stat-icon violet">＄</span><span class="stat-label">POR COBRAR</span></div>
+                <strong class="stat-value">{{ trabajos_por_cobrar_count }}</strong>
+                <span class="stat-note">Trabajos finalizados con saldo pendiente</span>
+                <a class="card-link" href="#por-cobrar" data-section-link="por-cobrar">Consultar saldos <span>→</span></a>
+              </article>
+            {% endif %}
+          </div>
+
+          <div class="content-grid">
+            {% if can_view_work %}
+              <article class="panel panel-wide">
+                <div class="panel-heading">
+                  <div><p class="eyebrow">OPERACIÓN</p><h2>Trabajos recientes</h2></div>
+                  <a class="text-link" href="#trabajos" data-section-link="trabajos">Ver todos <span>→</span></a>
+                </div>
+                {% include "gestion_publicidad/partials/work_table.html" with trabajos=trabajos_recientes compact=True %}
+              </article>
+            {% endif %}
+            {% if can_view_finance %}
+              <article class="panel">
+                <div class="panel-heading">
+                  <div><p class="eyebrow">ACTIVIDAD</p><h2>Últimos movimientos</h2></div>
+                  <a class="text-link" href="#finanzas" data-section-link="finanzas">Ver todos <span>→</span></a>
+                </div>
+                {% include "gestion_publicidad/partials/movement_table.html" with compact=True %}
+              </article>
+            {% endif %}
+          </div>
+        </section>
+
+        {% if can_view_work %}
+          <section class="page-section" id="trabajos" data-section="trabajos" aria-labelledby="heading-trabajos" hidden>
+            <div class="page-heading">
+              <div><p class="eyebrow">PRODUCCIÓN</p><h1 id="heading-trabajos">Trabajos</h1><p class="page-description">Seguimiento de clientes, entregas, estados y pagos.</p></div>
+              {% if can_add_work %}<a class="button button-primary" href="{% url 'work_create' %}"><span>＋</span> Nuevo trabajo</a>{% endif %}
+            </div>
+            <article class="panel">
+              <div class="panel-heading"><div><p class="eyebrow">REGISTRO</p><h2>Todos los trabajos <span class="count-pill">{{ trabajos_count }}</span></h2></div></div>
+              <div class="search-toolbar">
+                <label class="search-box" for="work-search"><span aria-hidden="true">⌕</span><input id="work-search" type="search" data-dashboard-search="work" aria-controls="work-table-all" placeholder="Buscar por cliente, descripción, número o estado"><button type="button" data-clear-search="work-search" aria-label="Limpiar búsqueda">×</button></label>
+                <span class="search-count" data-search-count="work" aria-live="polite">{{ trabajos_count }} resultados</span>
+              </div>
+              {% include "gestion_publicidad/partials/work_table.html" %}
+            </article>
+          </section>
+
+          <section class="page-section" id="jornadas" data-section="jornadas" aria-labelledby="heading-jornadas" hidden>
+            <div class="page-heading">
+              <div><p class="eyebrow">PLANIFICACIÓN</p><h1 id="heading-jornadas">Calendario y jornadas</h1><p class="page-description">Selecciona un día para consultar sus jornadas sin salir del calendario.</p></div>
+              {% if can_change_work %}<a class="button button-primary" href="{% url 'journey_create' %}"><span>＋</span> Nueva jornada</a>{% endif %}
+            </div>
+            <article class="panel calendar-panel">
+              <div class="panel-heading calendar-heading">
+                <div><p class="eyebrow">APARTADO 1 · CALENDARIO</p><h2>Calendario de trabajos</h2><p class="muted">Selecciona la fecha para filtrar las jornadas del apartado siguiente.</p></div>
+                <div class="calendar-controls">
+                  <form id="calendar-month-form" method="get" action="{% url 'dashboard' %}" class="calendar-month-picker">
+                    <input type="hidden" name="finance_month" value="{{ mes_financiero_input }}">
+                    <label class="visually-hidden" for="calendar-month">Mes del calendario</label>
+                    <input id="calendar-month" name="calendar_month" type="month" value="{{ mes_calendario_input }}">
+                    <input type="hidden" name="section" value="jornadas">
+                  </form>
+                  <div class="calendar-button-row">
+                    <a class="button button-secondary" href="?calendar_month={{ calendario.mes_anterior }}#jornadas" aria-label="Mes anterior">‹</a>
+                    <button class="button button-secondary" type="submit" form="calendar-month-form">Ir</button>
+                    <a class="button button-secondary" href="?calendar_month={{ calendario.mes_siguiente }}#jornadas" aria-label="Mes siguiente">›</a>
+                    <a class="button button-primary" href="?calendar_month={% now 'Y-m' %}#jornadas">Hoy</a>
+                  </div>
+                </div>
+              </div>
+              <div class="calendar-month-label">{{ mes_calendario_label }}</div>
+              <div class="calendar-scroll">
+                <table class="work-calendar">
+                  <thead><tr><th>Lun</th><th>Mar</th><th>Mié</th><th>Jue</th><th>Vie</th><th>Sáb</th><th>Dom</th></tr></thead>
+                  <tbody>
+                    {% for semana in calendario.celdas %}
+                      <tr>
+                        {% for celda in semana %}
+                          <td class="{% if celda.otro_mes %}other-month{% endif %} {% if celda.fecha == hoy %}calendar-today{% endif %}">
+                            <button class="calendar-date calendar-day-select" type="button" data-calendar-date="{{ celda.fecha|date:'Y-m-d' }}" aria-label="Mostrar jornadas del {{ celda.fecha|date:'d/m/Y' }}" aria-pressed="false">{{ celda.fecha|date:"j" }}</button>
+                            {% for jornada in celda.jornadas %}
+                              {% if can_change_work %}<a class="calendar-event journey-event" href="{% url 'journey_edit' jornada.pk %}">
+                                <strong>{{ jornada.trabajo.cliente }}</strong>
+                                <span>Jornada · {{ jornada.tareas_terminadas }}/{{ jornada.total_tareas }} tareas</span>
+                                {% for task in jornada.tareas_lista %}<small>{% if task.completada %}✓{% else %}○{% endif %} {{ task.descripcion }}</small>{% endfor %}
+                                {% for material in jornada.resumen_materiales %}<small>{{ material.nombre }}: {{ material.cantidad }} {{ material.unidad }}</small>{% endfor %}
+                              </a>{% else %}<div class="calendar-event journey-event">
+                                <strong>{{ jornada.trabajo.cliente }}</strong>
+                                <span>Jornada · {{ jornada.tareas_terminadas }}/{{ jornada.total_tareas }} tareas</span>
+                                {% for task in jornada.tareas_lista %}<small>{% if task.completada %}✓{% else %}○{% endif %} {{ task.descripcion }}</small>{% endfor %}
+                                {% for material in jornada.resumen_materiales %}<small>{{ material.nombre }}: {{ material.cantidad }} {{ material.unidad }}</small>{% endfor %}
+                              </div>{% endif %}
+                            {% endfor %}
+                            {% for trabajo in celda.entregas %}
+                              {% if can_change_work %}<a class="calendar-event deadline-event" href="{% url 'work_detail' trabajo.pk %}">
+                                <strong>Entrega</strong><span>{{ trabajo.cliente }}</span>
+                              </a>{% else %}<div class="calendar-event deadline-event">
+                                <strong>Entrega</strong><span>{{ trabajo.cliente }}</span>
+                              </div>{% endif %}
+                            {% endfor %}
+                            {% if can_change_work %}
+                              <a class="calendar-add" href="{% url 'journey_create' %}?fecha={{ celda.fecha|date:'Y-m-d' }}">＋ Agendar</a>
+                            {% endif %}
+                          </td>
+                        {% endfor %}
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              <div class="calendar-legend"><span><i class="legend-dot journey-dot"></i> Jornada y tareas</span><span><i class="legend-dot deadline-dot"></i> Fecha de entrega</span></div>
+            </article>
+            <section class="journey-list" aria-label="Jornadas">
+              <div class="panel journey-filter-panel">
+                <div class="panel-heading"><div><p class="eyebrow">APARTADO 2 · JORNADAS</p><h2 data-journey-filter-title>Jornadas registradas</h2><p class="muted" data-journey-filter-hint>Selecciona un día del calendario para ver únicamente sus jornadas.</p></div><button class="button button-secondary" type="button" data-clear-calendar-filter>Mostrar todas</button></div>
+                <div class="empty-state" data-no-journeys-for-date hidden>No hay jornadas registradas para este día.</div>
+              </div>
+              {% for jornada in jornadas %}
+                <article class="panel journey-card" hidden style="display: none;" data-journey-date="{{ jornada.fecha|date:'Y-m-d' }}">
+                  <div class="journey-heading">
+                    <div><p class="eyebrow">{{ jornada.fecha|date:"d/m/Y" }}</p><h2>{{ jornada.trabajo }}</h2><p class="muted">{{ jornada.trabajo.descripcion|truncatechars:130 }}</p></div>
+                    {% if can_change_work %}<a class="button button-secondary" href="{% url 'journey_edit' jornada.pk %}">Editar jornada</a>{% endif %}
+                  </div>
+                  {% if jornada.notas %}<p class="journey-notes">{{ jornada.notas }}</p>{% endif %}
+                  <div class="journey-columns">
+                    <div>
+                      <h3>Tareas del día <span class="count-pill">{{ jornada.tareas.count }}</span></h3>
+                      {% for tarea in jornada.tareas.all %}
+                        {% if can_change_work %}
+                          <form class="task-row" method="post" action="{% url 'alternar_tarea' tarea.pk %}">
+                            {% csrf_token %}
+                            <button class="task-toggle {% if tarea.completada %}is-complete{% endif %}" type="submit" aria-label="{% if tarea.completada %}Marcar pendiente{% else %}Completar{% endif %}: {{ tarea.descripcion }}" title="{% if tarea.completada %}Marcar pendiente{% else %}Completar tarea{% endif %}">{% if tarea.completada %}✓{% endif %}</button>
+                            <span class="{% if tarea.completada %}task-completed{% endif %}">{{ tarea.descripcion }}</span>
+                            {% if tarea.completada_en %}<small>{{ tarea.completada_en|date:"d/m H:i" }}</small>{% endif %}
+                          </form>
+                        {% else %}
+                          <div class="task-row"><span class="task-toggle {% if tarea.completada %}is-complete{% endif %}" aria-hidden="true">{% if tarea.completada %}✓{% endif %}</span><span class="{% if tarea.completada %}task-completed{% endif %}">{{ tarea.descripcion }}</span>{% if tarea.completada_en %}<small>{{ tarea.completada_en|date:"d/m H:i" }}</small>{% endif %}</div>
+                        {% endif %}
+                      {% empty %}
+                        <p class="empty-state">Esta jornada aún no tiene tareas registradas.</p>
+                      {% endfor %}
+                    </div>
+                    <div>
+                      <h3>Insumos utilizados</h3>
+                      {% for material in jornada.materiales_utilizados.all %}
+                        <div class="material-row"><span>{{ material.tipo_insumo|default:material.insumo }}</span><strong>{{ material.cantidad_utilizada }} {{ material.tipo_insumo.unidad_medida|default:material.insumo.unidad_medida }}</strong></div>
+                      {% empty %}
+                        <p class="empty-state">No se han asociado insumos a esta jornada.</p>
+                      {% endfor %}
+                    </div>
+                  </div>
+                </article>
+              {% empty %}
+                <div class="panel empty-panel"><span class="empty-symbol">☷</span><h2>No hay jornadas registradas</h2><p>Las jornadas y sus tareas aparecerán aquí cuando se registren.</p></div>
+              {% endfor %}
+            </section>
+          </section>
+
+          <section class="page-section" id="por-cobrar" data-section="por-cobrar" aria-labelledby="heading-cobrar" hidden>
+            <div class="page-heading"><div><p class="eyebrow">SEGUIMIENTO DE PAGOS</p><h1 id="heading-cobrar">Trabajos por cobrar</h1><p class="page-description">Trabajos finalizados cuyo saldo pendiente aún es mayor que cero.</p></div></div>
+            <article class="panel">
+              <div class="panel-heading"><div><p class="eyebrow">CUENTAS PENDIENTES</p><h2>Saldo por cliente <span class="count-pill">{{ trabajos_por_cobrar_count }}</span></h2></div></div>
+              {% include "gestion_publicidad/partials/receivables_table.html" %}
+            </article>
+          </section>
+        {% endif %}
+
+        {% if can_view_inventory %}
+          <section class="page-section" id="inventario" data-section="inventario" aria-labelledby="heading-inventario" hidden>
+            <div class="page-heading"><div><p class="eyebrow">CONTROL DE EXISTENCIAS</p><h1 id="heading-inventario">Insumos</h1><p class="page-description">Inventario agrupado por área, con variantes y alertas de stock.</p></div><div class="heading-actions">{% if can_change_inventory %}<a class="button button-secondary" href="{% url 'inventory_restock' %}">Reabastecer stock</a>{% endif %}{% if can_add_inventory %}<a class="button button-primary" href="{% url 'inventory_create' %}"><span>＋</span> Nuevo insumo</a>{% endif %}</div></div>
+            <article class="panel">
+              <div class="panel-heading"><div><p class="eyebrow">INVENTARIO</p><h2>Insumos por área <span class="count-pill">{{ insumos_count }}</span></h2></div></div>
+              <div class="search-toolbar">
+                <label class="search-box" for="inventory-search"><span aria-hidden="true">⌕</span><input id="inventory-search" type="search" data-dashboard-search="inventory" aria-controls="inventory-folders" placeholder="Buscar por insumo, área o variante"><button type="button" data-clear-search="inventory-search" aria-label="Limpiar búsqueda">×</button></label>
+                <span class="search-count" data-search-count="inventory" aria-live="polite">{{ insumos_count }} insumos</span>
+              </div>
+              <div id="inventory-folders" class="inventory-folders">
+                {% for area in grupos_insumos %}
+                  <details class="inventory-folder" data-inventory-folder open>
+                    <summary class="folder-summary"><span class="folder-icon" aria-hidden="true">▰</span><strong>{{ area.nombre }}</strong><span class="folder-count">{{ area.insumos|length }} insumos</span><span class="folder-chevron" aria-hidden="true">⌄</span></summary>
+                    <div class="table-wrap">
+                      <table>
+                        <thead><tr><th>Insumo / variante</th><th>Existencia</th><th>Stock mínimo</th><th>Estado</th><th></th></tr></thead>
+                        <tbody>
+                          {% for insumo in area.insumos %}
+                            {% with tipos=insumo.tipos.all %}
+                              <tr class="inventory-parent-row" data-search-row="inventory-parent" data-search-text="{{ insumo.nombre }} {{ area.nombre }}">
+                                <td>
+                                  {% if tipos or insumo.tiene_tipos %}
+                                    <button class="insumo-name-toggle" type="button" data-toggle-variants aria-expanded="false" aria-controls="variant-list-{{ insumo.pk }}">{{ insumo.nombre }} <span>{% if tipos %}{{ tipos|length }} variantes{% else %}Configurar variantes{% endif %}</span></button>
+                                  {% else %}
+                                    <strong>{{ insumo.nombre }}</strong>
+                                  {% endif %}
+                                </td>
+                                {% if tipos or insumo.tiene_tipos %}
+                                  <td colspan="3"><span class="muted">{% if tipos %}Existencias por variante{% else %}Aún no hay tipos de insumo{% endif %}</span></td>
+                                {% else %}
+                                  <td>{{ insumo.cantidad_disponible }} {{ insumo.unidad_medida }}</td>
+                                  <td>{{ insumo.stock_minimo }} {{ insumo.unidad_medida }}</td>
+                                  <td><span class="status status-{{ insumo.estado_stock|slugify }}">{{ insumo.estado_stock }}</span></td>
+                                {% endif %}
+                                <td>{% if can_change_inventory %}<a class="row-action" href="{% url 'inventory_edit' insumo.pk %}">Editar</a>{% endif %}</td>
+                              </tr>
+                              {% if tipos or insumo.tiene_tipos %}
+                                <tr class="variant-panel" id="variant-list-{{ insumo.pk }}" data-variant-list data-parent-search="{{ insumo.nombre }} {{ area.nombre }}" hidden>
+                                  <td colspan="5">
+                                    {% if tipos %}
+                                      <div class="table-wrap variant-table-wrap">
+                                        <table class="variant-table">
+                                          <thead><tr><th>Tipo de insumo</th><th>Existencia</th><th>Stock mínimo</th><th>Estado</th><th></th></tr></thead>
+                                          <tbody>
+                                            {% for tipo in tipos %}
+                                              <tr data-search-row="inventory-variant" data-search-text="{{ insumo.nombre }} {{ area.nombre }} {{ tipo.nombre }} {{ tipo.unidad_medida }}">
+                                                <td><strong>{{ tipo.nombre }}</strong></td><td>{{ tipo.cantidad_disponible }} {{ tipo.unidad_medida }}</td><td>{{ tipo.stock_minimo }} {{ tipo.unidad_medida }}</td>
+                                                <td><span class="status status-{{ tipo.estado_stock|slugify }}">{{ tipo.estado_stock }}</span></td>
+                                                <td>{% if can_change_inventory %}<a class="row-action" href="{% url 'inventory_edit' insumo.pk %}">Editar variantes</a>{% endif %}</td>
+                                              </tr>
+                                            {% endfor %}
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    {% else %}
+                                      <p class="empty-state">Este insumo está configurado para manejar tipos, pero todavía no tiene variantes registradas.</p>
+                                      {% if can_change_inventory %}<a class="row-action" href="{% url 'inventory_edit' insumo.pk %}">Configurar tipos de insumo</a>{% endif %}
+                                    {% endif %}
+                                  </td>
+                                </tr>
+                              {% endif %}
+                            {% endwith %}
+                          {% empty %}
+                            <tr><td colspan="5" class="table-empty">No hay insumos en esta área.</td></tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </details>
+                {% empty %}
+                  <div class="panel empty-panel"><span class="empty-symbol">▦</span><h2>No hay insumos registrados</h2><p>Los insumos aparecerán aquí cuando se registren.</p></div>
+                {% endfor %}
+              </div>
+              <p class="search-empty" data-no-search-results="inventory" hidden>No hay insumos que coincidan con la búsqueda.</p>
+            </article>
+            {% if can_change_inventory %}
+              <div class="section-shortcuts">
+                {% if can_add_inventory %}
+                  <a href="{% url 'area_create' %}">Agregar área de insumos <span>＋</span></a>
+                  <a href="{% url 'inventory_create' %}">Agregar tipo de insumo <span>＋</span></a>
+                {% endif %}
+                <a href="{% url 'inventory_list' %}">Ver áreas <span>→</span></a>
+                <a href="{% url 'inventory_list' %}">Ver tipos de insumo <span>→</span></a>
+              </div>
+            {% endif %}
+          </section>
+        {% endif %}
+
+        {% if can_view_finance %}
+          <section class="page-section" id="finanzas" data-section="finanzas" aria-labelledby="heading-finanzas" hidden>
+            <div class="page-heading"><div><p class="eyebrow">CONTROL FINANCIERO</p><h1 id="heading-finanzas">Finanzas</h1><p class="page-description">Movimientos del ledger compartido y categorías financieras activas.</p></div><div class="heading-actions">{% if can_manage_finance_categories %}<a class="button button-secondary" href="{% url 'category_list' %}">Categorías</a>{% endif %}{% if can_add_movement %}<a class="button button-primary" href="{% url 'movement_create' %}"><span>＋</span> Registrar movimiento</a>{% endif %}</div></div>
+            <div class="finance-month-toolbar">
+              <div><p class="eyebrow">PERÍODO SELECCIONADO</p><h2>{{ mes_financiero_label }}</h2></div>
+              <div class="month-navigation">
+                <a class="button button-secondary" href="?finance_month={{ mes_financiero_anterior }}&calendar_month={{ mes_calendario_input }}#finanzas" aria-label="Mes financiero anterior">‹</a>
+                <form method="get" action="{% url 'dashboard' %}" class="month-picker">
+                  <input type="hidden" name="calendar_month" value="{{ mes_calendario_input }}">
+                  <input type="hidden" name="section" value="finanzas">
+                  <label class="visually-hidden" for="finance-month">Mes de finanzas</label>
+                  <input id="finance-month" name="finance_month" type="month" value="{{ mes_financiero_input }}">
+                  <button class="button button-secondary" type="submit">Consultar</button>
+                </form>
+                <a class="button button-secondary" href="?finance_month={{ mes_financiero_siguiente }}&calendar_month={{ mes_calendario_input }}#finanzas" aria-label="Mes financiero siguiente">›</a>
+              </div>
+            </div>
+            <div class="finance-summary">
+              <div class="mini-stat"><span class="stat-icon green">↗</span><div><span>Ingresos registrados · {{ conteo_movimientos_mes.INGRESO }}</span>{% for total in totales_por_moneda %}<strong class="finance-total-line">{{ total.ingresos|floatformat:2 }} {{ total.currency }}</strong>{% empty %}<strong>—</strong>{% endfor %}</div></div>
+              <div class="mini-stat"><span class="stat-icon red">↘</span><div><span>Egresos registrados · {{ conteo_movimientos_mes.EGRESO }}</span>{% for total in totales_por_moneda %}<strong class="finance-total-line">{{ total.egresos|floatformat:2 }} {{ total.currency }}</strong>{% empty %}<strong>—</strong>{% endfor %}</div></div>
+              <div class="mini-stat balance-card"><span class="stat-icon violet">＝</span><div><span>Saldo del mes</span>{% for total in totales_por_moneda %}<strong class="finance-total-line {% if total.saldo < 0 %}amount-negative{% else %}amount-positive{% endif %}">{{ total.saldo|floatformat:2 }} {{ total.currency }}</strong>{% empty %}<strong>—</strong>{% endfor %}</div></div>
+            </div>
+            <p class="finance-disclaimer">Los saldos se calculan por moneda y no se convierten ni se suman entre monedas distintas.</p>
+            <article class="panel">
+              <div class="panel-heading"><div><p class="eyebrow">LEDGER COMPARTIDO</p><h2>Detalle de movimientos · {{ mes_financiero_label }} <span class="count-pill">{{ movimientos_mes|length }}</span></h2></div></div>
+              <div class="monthly-transactions">
+                {% for grupo in movimientos_por_fecha %}
+                  <section class="transaction-day">
+                    <h3>{{ grupo.fecha|date:"d/m/Y" }}</h3>
+                    {% include "gestion_publicidad/partials/movement_table.html" with movimientos=grupo.movimientos %}
+                  </section>
+                {% empty %}
+                  <div class="empty-panel"><span class="empty-symbol">◷</span><h2>Sin movimientos este mes</h2><p>No se encontraron transacciones en el período seleccionado.</p></div>
+                {% endfor %}
+              </div>
+            </article>
+            <article class="panel categories-panel">
+              <div class="panel-heading"><div><p class="eyebrow">CLASIFICACIÓN</p><h2>Categorías activas</h2></div>{% if can_add_finance_category %}<a class="button button-secondary" href="{% url 'category_create' %}">Nueva categoría</a>{% endif %}</div>
+              <div class="category-list">
+                {% for categoria in categorias_financieras %}
+                  <div class="category-row"><span class="category-dot {% if categoria.tipo == 'INCOME' %}income{% elif categoria.tipo == 'EXPENSE' %}expense{% else %}both{% endif %}"></span><strong>{{ categoria.nombre }}</strong><span>{{ categoria.get_tipo_display|default:"Ingreso o egreso" }}</span>{% if can_change_finance_category %}<a class="row-action category-edit" href="{% url 'category_edit' categoria.pk %}">Editar</a>{% endif %}</div>
+                {% empty %}
+                  <p class="empty-state">No hay categorías financieras activas.</p>
+                {% endfor %}
+              </div>
+            </article>
+          </section>
+        {% endif %}
+
+        <footer class="page-footer"><span>Macaira Studio · Gestión</span></footer>
+      </div>
+    </main>
+  </div>
+  <script src="{% static 'gestion_publicidad/js/dashboard.js' %}?v=20261106-3" defer></script>
+</body>
+</html>

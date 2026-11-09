@@ -1,0 +1,10 @@
+{% extends "admin/index.html" %}
+
+{% block content %}
+<div class="module" style="margin-bottom: 20px; padding: 16px;">
+  <h2>Panel de gestión Macaira Studio</h2>
+  <p>Consulta trabajos, jornadas, inventario y finanzas en una vista integrada.</p>
+  <p><a href="{% url 'dashboard' %}">Abrir panel de gestión</a></p>
+</div>
+{{ block.super }}
+{% endblock %}

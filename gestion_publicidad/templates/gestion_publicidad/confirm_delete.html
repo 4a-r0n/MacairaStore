@@ -1,0 +1,9 @@
+{% extends "gestion_publicidad/base_app.html" %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">CONFIRMACIÓN</p><h1>{{ page_title }}</h1></div></div>
+<section class="panel confirm-panel">
+  <p>¿Confirmas que deseas eliminar <strong>{{ object_label }}</strong>?</p>
+  {% if warning %}<p class="page-description">{{ warning }}</p>{% endif %}
+  <form method="post" class="form-actions">{% csrf_token %}<a class="button button-secondary" href="{{ cancel_url }}">Cancelar</a><button class="button button-danger" type="submit">Eliminar</button></form>
+</section>
+{% endblock %}

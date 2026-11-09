@@ -1,0 +1,7 @@
+{% extends "gestion_publicidad/base_app.html" %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">CLASIFICACIÓN</p><h1>Categorías financieras</h1><p class="page-description">Gestiona las categorías que clasifican los movimientos.</p></div>{% if can_add_category %}<a class="button button-primary" href="{% url 'category_create' %}">＋ Nueva categoría</a>{% endif %}</div>
+<article class="panel"><div class="table-wrap"><table><thead><tr><th>Categoría</th><th>Tipo</th><th>Estado</th><th></th></tr></thead><tbody>
+{% for categoria in categorias %}<tr><td><strong>{{ categoria.nombre }}</strong></td><td>{{ categoria.get_tipo_display|default:"Ingreso o egreso" }}</td><td>{% if categoria.activa %}<span class="status status-finalizado">Activa</span>{% else %}<span class="status">Inactiva</span>{% endif %}</td><td>{% if can_change_category %}<a class="row-action" href="{% url 'category_edit' categoria.pk %}">Editar</a>{% endif %}</td></tr>{% empty %}<tr><td colspan="4" class="table-empty">No hay categorías registradas.</td></tr>{% endfor %}
+</tbody></table></div></article>
+{% endblock %}

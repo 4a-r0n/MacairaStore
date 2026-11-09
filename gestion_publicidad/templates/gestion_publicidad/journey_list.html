@@ -1,0 +1,20 @@
+{% extends "gestion_publicidad/base_app.html" %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">PLANIFICACIÓN</p><h1>Jornadas y tareas</h1><p class="page-description">{{ page_description }}</p></div>{% if can_change_work %}<a class="button button-primary" href="{% url 'journey_create' %}">＋ Nueva jornada</a>{% endif %}</div>
+<article class="panel">
+  <form method="get" class="filter-toolbar"><label class="search-box"><span aria-hidden="true">⌕</span><input type="search" name="q" value="{{ query }}" placeholder="Buscar trabajo, notas o tarea"><button type="submit" class="filter-submit" aria-label="Aplicar búsqueda"><span aria-hidden="true">↵</span></button></label></form>
+  <div class="journey-list">
+    {% for jornada in jornadas %}
+      <section class="journey-card panel journey-card-standalone">
+        <div class="journey-heading"><div><p class="eyebrow">{{ jornada.fecha|date:"d/m/Y" }}</p><h2>{{ jornada.trabajo }}</h2><p class="muted">{{ jornada.trabajo.descripcion|truncatechars:110 }}</p></div>{% if can_change_work %}<a class="button button-secondary" href="{% url 'journey_edit' jornada.pk %}">Editar jornada</a>{% endif %}</div>
+        {% if jornada.notas %}<p class="journey-notes">{{ jornada.notas }}</p>{% endif %}
+        <div class="journey-columns"><div><h3>Tareas del día <span class="count-pill">{{ jornada.tareas.count }}</span></h3>
+          {% for tarea in jornada.tareas.all %}
+            {% if can_change_work %}<form class="task-row" method="post" action="{% url 'alternar_tarea' tarea.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="task-toggle {% if tarea.completada %}is-complete{% endif %}" type="submit" aria-label="{% if tarea.completada %}Marcar pendiente{% else %}Completar{% endif %}: {{ tarea.descripcion }}">{% if tarea.completada %}✓{% endif %}</button><span class="{% if tarea.completada %}task-completed{% endif %}">{{ tarea.descripcion }}</span></form>{% else %}<div class="task-row"><span class="task-toggle {% if tarea.completada %}is-complete{% endif %}">{% if tarea.completada %}✓{% endif %}</span><span>{{ tarea.descripcion }}</span></div>{% endif %}
+          {% empty %}<p class="empty-state">Esta jornada aún no tiene tareas.</p>{% endfor %}
+        </div><div><h3>Insumos utilizados</h3>{% for material in jornada.materiales_utilizados.all %}<div class="material-row"><span>{{ material.tipo_insumo|default:material.insumo }}</span><strong>{{ material.cantidad_utilizada }} {{ material.tipo_insumo.unidad_medida|default:material.insumo.unidad_medida }}</strong></div>{% empty %}<p class="empty-state">No se han asociado insumos.</p>{% endfor %}</div></div>
+      </section>
+    {% empty %}<div class="empty-panel"><span class="empty-symbol">☷</span><h2>No hay jornadas registradas</h2><p>Agrega una jornada para comenzar a planificar el trabajo.</p></div>{% endfor %}
+  </div>
+</article>
+{% endblock %}

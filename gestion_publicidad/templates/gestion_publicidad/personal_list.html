@@ -1,0 +1,32 @@
+{% extends "gestion_publicidad/base_app.html" %}
+{% block content %}
+<div class="page-heading">
+  <div><p class="eyebrow">CUENTAS Y ACCESOS</p><h1>Personal</h1><p class="page-description">{{ page_description }}</p></div>
+  <a class="button button-primary" href="{% url 'personal_create' %}">＋ Agregar integrante</a>
+</div>
+<article class="panel">
+  <div class="panel-heading"><div><p class="eyebrow">EQUIPO</p><h2>Cuentas <span class="count-pill">{{ usuarios|length }}</span></h2></div></div>
+  <form method="get" class="filter-toolbar">
+    <label class="search-box"><span aria-hidden="true">⌕</span><input type="search" name="q" value="{{ query }}" placeholder="Buscar por nombre, usuario o correo"></label>
+  </form>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Integrante</th><th>Usuario</th><th>Rol</th><th>Permisos individuales</th><th>Estado</th><th></th></tr></thead>
+      <tbody>
+        {% for usuario in usuarios %}
+          <tr>
+            <td><strong>{{ usuario.get_full_name|default:usuario.username }}</strong><small class="cell-subtitle">{{ usuario.email|default:"Sin correo" }}</small></td>
+            <td>{{ usuario.username }}</td>
+            <td><span class="status {% if usuario.role_label == 'Administrador' %}status-finalizado{% else %}status-neutral{% endif %}">{{ usuario.role_label }}</span></td>
+            <td>{{ usuario.user_permissions.count }}</td>
+            <td>{% if usuario.is_active %}<span class="status status-finalizado">Activa</span>{% else %}<span class="status status-cancelado">Inactiva</span>{% endif %}</td>
+            <td class="inventory-row-actions"><a class="row-action" href="{% url 'personal_detail' usuario.pk %}">Ver</a><a class="row-action" href="{% url 'personal_edit' usuario.pk %}">Editar</a></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="table-empty">{% if query %}No se encontraron cuentas que coincidan con la búsqueda.{% else %}Aún no hay integrantes registrados.{% endif %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</article>
+{% endblock %}
