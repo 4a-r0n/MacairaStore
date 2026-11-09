@@ -41,10 +41,6 @@ Sistema backend desarrollado con Python y Django para la administración central
    python manage.py migrate
    python manage.py runserver
 
-## Gestión Finanzas
-
-Gestión Finanzas registra y consulta ingresos y egresos en el mismo ledger `MovimientoFinanciero` que usa Gestión Publicidad, y permite clasificar esos movimientos con categorías financieras. El sitio ofrece pantallas propias para consultar y registrar movimientos y administrar sus categorías.
-
 ## Panel de gestión
 
 La ruta `/` muestra el panel de Macaira Studio; las cuentas sin sesión ven el formulario propio de acceso y pueden autenticarse con su usuario o con un correo único asociado a la cuenta. «Recordarme siempre» conserva la sesión según `SESSION_COOKIE_AGE`; sin esa opción, la sesión vence al cerrar el navegador. Cerrar sesión invalida ambas modalidades.
