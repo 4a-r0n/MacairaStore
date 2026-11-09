@@ -8,16 +8,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils import timezone
-from .admin import (
-    InsumoAdmin,
-    MovimientoFinancieroForm,
-    ReabastecerStockForm,
-    TipoInsumoInline,
-    TrabajoAdmin,
-    TrabajoInsumoForm,
-    TrabajoPorCobrarAdmin,
-    gestion_admin_site,
-)
+from .forms import MovimientoForm, ReabastecerInsumoForm, TrabajoInsumoForm
 from .models import (
     AreaInsumo,
     Insumo,
@@ -50,15 +41,6 @@ class CantidadesNoNegativasTests(TestCase):
                 campo = modelo._meta.get_field(nombre_campo)
                 with self.assertRaises(ValidationError):
                     campo.clean(Decimal("-1"), None)
-
-    def test_administracion_no_muestra_entregado_como_campo_editable(self):
-        admin_trabajos = TrabajoAdmin(Trabajo, gestion_admin_site)
-        request = RequestFactory().get("/admin/")
-        usuario = get_user_model()()
-        usuario.is_superuser = True
-        request.user = usuario
-
-        self.assertNotIn("entregado", admin_trabajos.get_fields(request))
 
 
 class ControlStockTests(TestCase):
@@ -167,13 +149,7 @@ class ControlStockTests(TestCase):
         )
 
         self.assertEqual(tipo.estado_stock, "Poco stock")
-        insumo_admin = InsumoAdmin(Insumo, gestion_admin_site)
-        tipo_inline = TipoInsumoInline(Insumo, gestion_admin_site)
-        self.assertEqual(insumo_admin.control_stock(insumo), "—")
-        self.assertIn("Poco stock", str(tipo_inline.control_stock(tipo)))
-        self.assertEqual(insumo_admin.list_display, ("nombre", "area", "control_stock"))
-        self.assertIn("control_stock", tipo_inline.fields)
-        self.assertIn("stock_minimo", tipo_inline.fields)
+        self.assertEqual(insumo.estado_stock, "Agotado")
 
     def test_minimo_configurable_ajusta_alerta_de_control_stock(self):
         insumo = Insumo(
@@ -196,7 +172,7 @@ class ControlStockTests(TestCase):
             area=area,
             cantidad_disponible=Decimal("12"),
         )
-        form = ReabastecerStockForm({
+        form = ReabastecerInsumoForm({
             "area": area.pk,
             "insumo": insumo.pk,
             "tipo_insumo": "",
@@ -223,7 +199,7 @@ class ControlStockTests(TestCase):
             unidad_medida="metros",
             cantidad_disponible=Decimal("10"),
         )
-        form = ReabastecerStockForm({
+        form = ReabastecerInsumoForm({
             "area": area.pk,
             "insumo": insumo.pk,
             "tipo_insumo": tipo.pk,
@@ -246,7 +222,7 @@ class ControlStockTests(TestCase):
             nombre="Vinil opaco",
             unidad_medida="metros",
         )
-        form = ReabastecerStockForm({
+        form = ReabastecerInsumoForm({
             "area": area.pk,
             "insumo": insumo.pk,
             "tipo_insumo": "",
@@ -478,14 +454,6 @@ class FechaLimiteTrabajoTests(TestCase):
         localdate.return_value = date(2026, 10, 30)
         self.assertEqual(trabajo.estado_entrega, "Expirado")
 
-    def test_fecha_limite_es_editable_para_empleados(self):
-        admin_trabajos = TrabajoAdmin(Trabajo, gestion_admin_site)
-        request = RequestFactory().get("/admin/")
-        request.user = AnonymousUser()
-        readonly_fields = admin_trabajos.get_readonly_fields(request, obj=Trabajo())
-
-        self.assertNotIn("fecha_limite", readonly_fields)
-
     def test_finalizar_trabajo_lo_marca_entregado_y_limpia_fecha_limite(self):
         trabajo = Trabajo.objects.create(
             cliente="Cliente de prueba",
@@ -552,18 +520,6 @@ class TrabajosPorCobrarTests(TestCase):
         trabajo.save()
         self.assertFalse(TrabajoPorCobrar.objects.filter(pk=trabajo.pk).exists())
 
-    def test_admin_por_cobrar_reutiliza_permisos_de_trabajos(self):
-        admin_por_cobrar = TrabajoPorCobrarAdmin(TrabajoPorCobrar, gestion_admin_site)
-        request = RequestFactory().get("/admin/")
-        usuario = AnonymousUser()
-        usuario.is_superuser = True
-        request.user = usuario
-
-        self.assertTrue(admin_por_cobrar.has_module_permission(request))
-        self.assertTrue(admin_por_cobrar.has_view_permission(request))
-        self.assertFalse(admin_por_cobrar.has_add_permission(request))
-        self.assertFalse(admin_por_cobrar.has_delete_permission(request))
-
     def test_cuentas_por_cobrar_y_trabajos_usan_las_pantallas_propias(self):
         self.crear_trabajo("Pendiente de cobro", "FINALIZADO", "25")
         self.crear_trabajo("Pagado", "FINALIZADO", "0")
@@ -608,8 +564,12 @@ class CategoriasEgresoTests(TestCase):
             "descripcion": "Compra de tinta",
             "trabajo": str(self.trabajo.pk),
             "categoria_egreso": "COMPRA_MATERIAL",
+            "fecha_transaccion": "2026-11-09",
+            "tipo_ingreso": "",
+            "categoria_financiera": "",
+            "empleado": "",
         }
-        formulario = MovimientoFinancieroForm(data=datos)
+        formulario = MovimientoForm(data=datos)
 
         self.assertTrue(formulario.is_valid(), formulario.errors)
         movimiento = formulario.save()
@@ -636,13 +596,16 @@ class CategoriasEgresoTests(TestCase):
             "trabajo": "",
             "categoria_egreso": "PAGO_EMPLEADOS",
             "empleado": "",
+            "fecha_transaccion": "2026-11-09",
+            "tipo_ingreso": "",
+            "categoria_financiera": "",
         }
-        formulario_sin_empleado = MovimientoFinancieroForm(data=datos)
+        formulario_sin_empleado = MovimientoForm(data=datos)
         self.assertFalse(formulario_sin_empleado.is_valid())
         self.assertIn("empleado", formulario_sin_empleado.errors)
 
         datos["empleado"] = str(empleado.pk)
-        formulario = MovimientoFinancieroForm(data=datos)
+        formulario = MovimientoForm(data=datos)
         self.assertTrue(formulario.is_valid(), formulario.errors)
         movimiento = formulario.save()
         self.assertEqual(movimiento.empleado, empleado)
@@ -667,7 +630,7 @@ class CategoriasEgresoTests(TestCase):
             is_active=False,
         )
         empleado_inactivo.groups.add(grupo_empleados)
-        formulario = MovimientoFinancieroForm()
+        formulario = MovimientoForm()
 
         self.assertIn(empleado, formulario.fields["empleado"].queryset)
         self.assertNotIn(empleado_inactivo, formulario.fields["empleado"].queryset)
@@ -705,7 +668,7 @@ class CategoriasEgresoTests(TestCase):
         self.assertContains(respuesta, 'name="empleado"')
 
     def test_egreso_sin_categoria_no_es_valido(self):
-        formulario = MovimientoFinancieroForm(data={
+        formulario = MovimientoForm(data={
             "tipo": "EGRESO",
             "monto": "25",
             "metodo_pago": "EFECTIVO_USD",
@@ -713,13 +676,18 @@ class CategoriasEgresoTests(TestCase):
             "tipo_cuenta": "USD",
             "descripcion": "Compra de tinta",
             "categoria_egreso": "",
+            "fecha_transaccion": "2026-11-09",
+            "tipo_ingreso": "",
+            "categoria_financiera": "",
+            "empleado": "",
+            "trabajo": "",
         })
 
         self.assertFalse(formulario.is_valid())
         self.assertIn("categoria_egreso", formulario.errors)
 
     def test_ingreso_no_guarda_categoria_egreso(self):
-        formulario = MovimientoFinancieroForm(data={
+        formulario = MovimientoForm(data={
             "tipo": "INGRESO",
             "monto": "25",
             "metodo_pago": "EFECTIVO_USD",
@@ -728,6 +696,10 @@ class CategoriasEgresoTests(TestCase):
             "descripcion": "Pago de trabajo",
             "trabajo": str(self.trabajo.pk),
             "categoria_egreso": "COMPRA_MATERIAL",
+            "tipo_ingreso": "ABONO_CLIENTES",
+            "fecha_transaccion": "2026-11-09",
+            "categoria_financiera": "",
+            "empleado": "",
         })
 
         self.assertTrue(formulario.is_valid(), formulario.errors)
