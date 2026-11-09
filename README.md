@@ -32,10 +32,10 @@ Sistema backend desarrollado con Python y Django para la administración central
    source venv/bin/activate
 
 3. Instalar las dependencias del proyecto:
-   pip install django python-decouple
+   pip install -r requirements.txt
 
 4. Configurar las variables de entorno:
-   Copiar el archivo `.env.example` y renombrarlo a `.env`. Definir los valores de las variables locales dentro del archivo.
+   Copiar el archivo `.env.example` y renombrarlo a `.env`. Definir los valores de las variables locales dentro del archivo. En local, `DATABASE_URL` puede quedar vacío para usar SQLite.
 
 5. Aplicar las migraciones e iniciar el servidor de desarrollo:
    python manage.py migrate
