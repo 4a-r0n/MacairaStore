@@ -16,10 +16,20 @@
     const form = jobPaymentType.closest("form");
     const paymentType = jobPaymentType.value;
     const noPayment = paymentType === "NADA" || !paymentType;
+    const paymentMethod = form.querySelector('[name="metodo_pago"]');
+    const cashPayment = paymentMethod?.value === "EFECTIVO_USD";
+
     toggleField(form, "monto_abono", noPayment || paymentType === "TOTAL");
-    ["metodo_pago", "plataforma", "tipo_cuenta"].forEach((name) => {
-      toggleField(form, name, noPayment);
-    });
+    toggleField(form, "metodo_pago", noPayment);
+    toggleField(form, "plataforma", noPayment || cashPayment);
+    toggleField(form, "tipo_cuenta", noPayment || cashPayment);
+
+    if (paymentMethod?.value === "PAGO_MOVIL") {
+      const platform = form.querySelector('[name="plataforma"]');
+      const accountType = form.querySelector('[name="tipo_cuenta"]');
+      if (platform) platform.value = "BANCO_NACIONAL";
+      if (accountType) accountType.value = "VES";
+    }
   }
 
   function setCategoryFromMovementType(form, type, subType) {
@@ -90,7 +100,12 @@
   }
 
   if (jobPaymentType) {
+    const jobForm = jobPaymentType.closest("form");
     jobPaymentType.addEventListener("change", updateJobPaymentFields);
+    const jobPaymentMethod = jobForm?.querySelector('[name="metodo_pago"]');
+    if (jobPaymentMethod) {
+      jobPaymentMethod.addEventListener("change", updateJobPaymentFields);
+    }
     updateJobPaymentFields();
   }
   if (movementType) {
